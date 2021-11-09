@@ -1,0 +1,49 @@
+DECLARE mylist CURSOR
+FOR SELECT *
+  FROM (VALUES ('accounting')
+             , ('analyst')
+             , ('audit')
+             , ('configuration')
+             , ('DataLake')
+             , ('drugmapping')
+             , ('eligibility')
+             , ('hospice')
+             , ('infotrak')
+             , ('infotrak_audit')
+             , ('jobtrak')
+             , ('logging')
+             , ('medispan')
+             , ('msaccess')
+             , ('msaccess_audit')
+             , ('pricing')
+             , ('rebates')
+             , ('specialty')
+             , ('website')
+       ) t1 (c1),
+	   (VALUES ('MTS\dev.app$')
+             , ('MTS\stg.app$')
+       ) t2 (c1)
+
+DECLARE
+	@dbname varchar(max),
+	@gmsa varchar(max);
+
+OPEN mylist;
+
+FETCH NEXT FROM mylist INTO 
+	@dbname,
+	@gmsa;
+
+WHILE @@FETCH_STATUS=0
+	BEGIN
+		PRINT 'USE '+ @dbname;
+		PRINT 'EXEC sp_AddRoleMember ''db_datareader'', ''' + @gmsa + '''';
+		PRINT 'GRANT CONNECT TO [' + @gmsa + ']';
+		FETCH NEXT FROM mylist INTO 
+			@dbname,
+			@gmsa;
+	END;
+
+CLOSE mylist;
+
+DEALLOCATE mylist;
